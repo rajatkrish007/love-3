@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Love Story</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            background-color: #fecdd3; /* Darker soft pink background fallback */
+        }
+        .font-dancing-script {
+            font-family: 'Dancing Script', cursive;
+        }
+        .font-playfair {
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* --- New Romantic Floating Hearts Background --- */
+        #hearts-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .heart-shape {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            opacity: 0;
+            animation-name: floatUp;
+            animation-timing-function: linear;
+            animation-iteration-count: infinite;
+        }
+        .heart-shape::before,
+        .heart-shape::after {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            width: 10px;
+            height: 16px;
+            background: currentColor;
+            border-radius: 10px 10px 0 0;
+            transform: rotate(-45deg);
+            transform-origin: 0 100%;
+        }
+        .heart-shape::after {
+            left: 0;
+            transform: rotate(45deg);
+            transform-origin: 100% 100%;
+        }
+
+        @keyframes floatUp {
+            from {
+                transform: translateY(100vh) scale(0.5);
+                opacity: 0;
+            }
+            25% {
+                opacity: 0.6;
+            }
+            to {
+                transform: translateY(-20px) scale(1);
+                opacity: 0;
+            }
+        }
+
+        #presentation-container {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 3D Slide Transitions */
+        .slide {
+            display: none;
+            opacity: 0;
+            transform: perspective(1500px) rotateY(10deg) scale(0.95);
+            transition: opacity 0.8s ease-in-out, transform 0.8s ease-in-out;
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+        }
+        
+        .slide.active.slide-out {
+            transform: perspective(1500px) rotateY(-10deg) scale(0.95);
+            opacity: 0;
+        }
+
+        .slide.active {
+            display: flex;
+            opacity: 1;
+            transform: perspective(1500px) rotateY(0) scale(1);
+            position: absolute;
+        }
+
+        /* Content Entrance Animations */
+        .slide.active .animated {
+            animation-duration: 0.9s;
+            animation-fill-mode: both;
+            animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .slide.active .fade-in { animation-name: fadeIn; }
+        .slide.active .fade-in-up { animation-name: fadeInUp; }
+        .slide.active .delay-1 { animation-delay: 0.3s; }
+        .slide.active .delay-2 { animation-delay: 0.5s; }
+        .slide.active .delay-3 { animation-delay: 0.7s; }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(35px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Heart animation */
+        .heart-icon {
+            color: #e11d48; /* Rose-600 color for heart */
+            animation: beat 0.6s infinite alternate;
+            transform-origin: center;
+        }
+        @keyframes beat { to { transform: scale(1.2); } }
+        
+        /* Navigation Button Styling */
+        .nav-btn {
+            background-color: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(225, 29, 72, 0.4); /* Rose-600 border */
+            color: #e11d48;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+        .nav-btn:hover {
+            transform: scale(1.15);
+            background-color: rgba(225, 29, 72, 0.1);
+        }
+        
+        /* Slide Indicator Styling */
+        .indicator {
+            background-color: rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease;
+        }
+        .indicator.active {
+             background-color: #e11d48; /* Rose-600 */
+        }
+
+        /* --- Flip Card Styles for Slide 5 --- */
+        .flip-card {
+            background-color: transparent;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+        .flip-card-inner {
+            position: relative;
+            width: 100%; height: 100%;
+            text-align: center;
+            transition: transform 0.8s;
+            transform-style: preserve-3d;
+        }
+        .flip-card.is-flipped .flip-card-inner { transform: rotateY(180deg); }
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%; height: 100%;
+            -webkit-backface-visibility: hidden; backface-visibility: hidden;
+        }
+        .flip-card-back {
+            background-color: #fff1f2; /* Rose-100 */
+            color: #4b5563; /* Gray-600 */
+            transform: rotateY(180deg);
+            font-size: 0.8rem; /* Smaller base font size for memories */
+        }
+        @media (min-width: 640px) {
+            .flip-card-back {
+                font-size: 0.875rem; /* sm:text-sm */
+            }
+        }
+
+    </style>
+</head>
+<body class="bg-rose-200 flex items-center justify-center h-screen p-2 sm:p-0">
+    <div id="hearts-bg"></div>
+
+    <!-- Presentation Container -->
+    <div id="presentation-container" class="w-full h-full max-w-4xl max-h-[600px] bg-white/60 backdrop-blur-md border border-rose-200/50 rounded-2xl shadow-2xl flex flex-col relative overflow-hidden">
+
+        <!-- Slide 1: Title Slide -->
+        <div class="slide active w-full h-full flex-col items-center justify-center p-4 sm:p-8 text-center">
+            <h1 class="font-dancing-script text-4xl sm:text-5xl md:text-7xl text-rose-600 mb-2 sm:mb-4 animated fade-in-up">Three Months of Us</h1>
+            <p class="text-lg sm:text-xl md:text-2xl text-gray-600 mb-6 sm:mb-8 animated fade-in-up delay-1">A collection of moments with my favorite person.</p>
+            <div class="w-full max-w-sm sm:max-w-md h-48 sm:h-64 bg-rose-200 rounded-lg overflow-hidden shadow-lg animated fade-in-up delay-2 border-2 border-rose-300/50">
+                <img src="https://raw.githubusercontent.com/rajatkrish007/pictures/main/0.jpg" alt="Your Favorite Photo of Us" class="w-full h-full object-cover" onerror="this.onerror=null;this.src='https://placehold.co/600x400/fecdd3/be123c?text=Our+Photo';">
+            </div>
+            <p class="mt-4 sm:mt-6 text-gray-500 text-xs sm:text-sm animated fade-in delay-3">Click the arrows to begin our journey</p>
+        </div>
+
+        <!-- Slide 2: The Hinge Screenshot -->
+        <div class="slide w-full h-full flex-col md:flex-row items-center justify-center p-4 sm:p-8 gap-4 md:gap-8">
+            <div class="w-full md:w-1/2 h-48 sm:h-64 md:h-full bg-white rounded-lg overflow-hidden shadow-lg flex items-center justify-center animated fade-in border border-rose-200/80">
+                <img src="https://raw.githubusercontent.com/rajatkrish007/pictures/main/1.jpg" alt="The Screenshot That Changed Everything" class="w-auto h-full object-contain p-2 sm:p-4" onerror="this.onerror=null;this.src='https://placehold.co/400x600/f1f5f9/be123c?text=Screenshot';">
+            </div>
+            <div class="w-full md:w-1/2 text-center md:text-left">
+                <h2 class="font-playfair text-2xl md:text-4xl text-gray-800 mb-2 sm:mb-4 animated fade-in-up delay-1">The Notification That Changed My World</h2>
+                <p class="text-gray-600 text-base md:text-lg animated fade-in-up delay-2">
+                    I'll never forget seeing this. It wasn't just a notification; it was a sign. Three little words—"Sonam likes you"—that felt like the start of something amazing. Little did I know, this simple screenshot was the first page of our beautiful story. The best is yet to come.
+                </p>
+            </div>
+        </div>
+
+        <!-- Slide 3: The Day We Expressed Our Love -->
+        <div class="slide w-full h-full flex-col md:flex-row-reverse items-center justify-center p-4 sm:p-8 gap-4 md:gap-8">
+            <div class="w-full md:w-1/2 h-48 sm:h-64 md:h-full bg-rose-200 rounded-lg overflow-hidden shadow-lg animated fade-in border-2 border-rose-300/50">
+                <img src="https://raw.githubusercontent.com/rajatkrish007/pictures/main/10.jpg" alt="A photo that captures the feeling of that day" class="w-full h-full object-cover" onerror="this.onerror=null;this.src='https://placehold.co/600x400/fecdd3/be123c?text=Special+Day';">
+            </div>
+            <div class="w-full md:w-1/2 text-center md:text-left">
+                <h2 class="font-playfair text-2xl md:text-4xl text-gray-800 mb-2 sm:mb-4 animated fade-in-up delay-1">The Day Our Hearts Spoke</h2>
+                <p class="text-gray-600 text-base md:text-lg animated fade-in-up delay-2">
+                    I remember the exact moment: June 2nd, 8:14 PM. My train pulled into Delhi on my way to Mumbai, and just as we spoke the words, our worlds aligned. Knowing we were finally in the same city, I had this powerful feeling you would run towards me through the crowd and hug me tight. In that instant, all the miles between us disappeared, replaced by a promise and a beautiful, spoken truth.
+                </p>
+            </div>
+        </div>
+        
+        <!-- Slide 4: Loving Across the Miles -->
+        <div class="slide w-full h-full flex-col md:flex-row items-center justify-center p-4 sm:p-8 gap-4 md:gap-8">
+            <div class="w-full md:w-1/2 h-48 sm:h-64 md:h-full bg-rose-200 rounded-lg overflow-hidden shadow-lg animated fade-in border-2 border-rose-300/50">
+                <img src="https://raw.githubusercontent.com/rajatkrish007/pictures/main/9.jpg" alt="Placeholder for a screenshot of a video call or a candid photo" class="w-full h-full object-cover" onerror="this.onerror=null;this.src='https://placehold.co/600x400/fecdd3/be123c?text=Video+Call';">
+            </div>
+            <div class="w-full md:w-1/2 text-center md:text-left">
+                <h2 class="font-playfair text-2xl md:text-4xl text-gray-800 mb-2 sm:mb-4 animated fade-in-up delay-1">Miles Apart, Close at Heart</h2>
+                <p class="text-gray-600 text-base md:text-lg animated fade-in-up delay-2">
+                    How are we so close? It's because we prioritize transparency and accountability, share a strong empathy, and communicate with our whole hearts. It’s what makes us feel so sorted and sure. With each passing day, every chat, call, and video call becomes another beautiful thread in our story, making the distance feel smaller and our love feel stronger.
+                </p>
+            </div>
+        </div>
+
+        <!-- Slide 5: A Gallery of Memories -->
+        <div class="slide w-full h-full flex-col items-center justify-center p-4 sm:p-8 text-center">
+            <h2 class="font-playfair text-2xl md:text-4xl text-gray-800 mb-4 animated fade-in-up">My Memory Highlight</h2>
+            <div class="w-full max-w-xs sm:max-w-2xl grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 md:gap-4 animated fade-in-up delay-1">
+                <!-- Tile 1 -->
+                <div class="flip-card aspect-square">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front rounded-lg overflow-hidden shadow-lg border border-rose-300/50 bg-white">
+                            <img src="https://raw.githubusercontent.com/rajatkrish007/pictures/main/1.jpg" alt="Memory Highlight 1" class="w-full h-full object-contain" onerror="this.onerror=null;this.src='https://placehold.co/200x200/f1f5f9/be123c?text=Memory+1';">
+                        </div>
+                        <div class="flip-card-back rounded-lg flex items-center justify-center p-2 text-center border border-rose-300/50">
+                             <p>It was the moment your profile popped up on my phone while I was at the gym. May 31st, 2025, 5:24 PM. That's when it all started.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Tile 2 -->
+                <div class="flip-card aspect-square">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front rounded-lg overflow-hidden shadow-lg border border-rose-300/50">
+                            <img src="https://raw.githubusercontent.com/rajatkrish007/pictures/main/4.jpg" alt="Memory Highlight 2" class="w-full h-full object-cover" onerror="this.onerror=null;this.src='https://placehold.co/200x200/f1f5f9/be123c?text=Memory+2';">
+                        </div>
+                        <div class="flip-card-back rounded-lg flex items-center justify-center p-2 text-center border border-rose-300/50">
+                             <p>Our thoughts, stories, and vibes just clicked. This was the moment you shared your number, taking us to a beautiful new level.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Tile 3 -->
+                <div class="flip-card aspect-square">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front rounded-lg overflow-hidden shadow-lg border border-rose-300/50">
+                            <img src="https://raw.githubusercontent.com/rajatkrish007/pictures/main/2.jpg" alt="Memory Highlight 3" class="w-full h-full object-cover" onerror="this.onerror=null;this.src='https://placehold.co/200x200/f1f5f9/be123c?text=Memory+3';">
+                        </div>
+                        <div class="flip-card-back rounded-lg flex items-center justify-center p-2 text-center border border-rose-300/50">
+                             <p>This picture is so special. It gave me the strongest feeling that I'd known you from somewhere before, a sense of destiny, that you were already mine.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Tile 4 -->
+                <div class="flip-card aspect-square">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front rounded-lg overflow-hidden shadow-lg border border-rose-300/50 bg-white">
+                            <img src="https://raw.githubusercontent.com/rajatkrish007/pictures/main/5.jpg" alt="Memory Highlight 4" class="w-full h-full object-contain" onerror="this.onerror=null;this.src='https://placehold.co/200x200/f1f5f9/be123c?text=Memory+4';">
+                        </div>
+                        <div class="flip-card-back rounded-lg flex items-center justify-center p-2 text-center border border-rose-300/50">
+                             <p>August 31st, 2025. Our first meeting. I'll never forget the sound of the rain, our auto ride, and your shy laugh. I'll always cherish that you came to see me at the station, even when you weren't feeling well.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Tile 5 -->
+                <div class="flip-card aspect-square">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front rounded-lg overflow-hidden shadow-lg border border-rose-300/50">
+                           <img src="https://raw.githubusercontent.com/rajatkrish007/pictures/main/6.jpg" alt="Memory Highlight 5" class="w-full h-full object-cover" onerror="this.onerror=null;this.src='https://placehold.co/200x200/f1f5f9/be123c?text=Memory+5';">
+                        </div>
+                        <div class="flip-card-back rounded-lg flex items-center justify-center p-2 text-center border border-rose-300/50">
+                             <p>That evening walk... I was feeling so uneasy, but you massaged my head and got ready to go out, even when you weren't feeling well yourself. It meant the world to me.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Tile 6 -->
+                <div class="flip-card aspect-square">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front rounded-lg overflow-hidden shadow-lg border border-rose-300/50">
+                            <img src="https://raw.githubusercontent.com/rajatkrish007/pictures/main/7.jpg" alt="Memory Highlight 6" class="w-full h-full object-cover" onerror="this.onerror=null;this.src='https://placehold.co/200x200/f1f5f9/be123c?text=Memory+6';">
+                        </div>
+                        <div class="flip-card-back rounded-lg flex items-center justify-center p-2 text-center border border-rose-300/50">
+                           <p>This was the message that you wrote in my notes, which I read on the train ride home. It felt like the perfect ending to our wonderful meeting and brought tears to my eyes for the first time in a long while.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+             <p class="text-gray-500 text-sm mt-4 animated fade-in-up delay-2">
+                Click on a photo to reveal the memory behind it.
+            </p>
+        </div>
+        
+        <!-- Slide 6: The Future -->
+        <div class="slide w-full h-full flex-col md:flex-row-reverse items-center justify-center p-4 sm:p-8 gap-4 md:gap-8">
+             <div class="w-full md:w-1/2 h-48 sm:h-64 md:h-full bg-rose-200 rounded-lg overflow-hidden shadow-lg animated fade-in border-2 border-rose-300/50">
+                <img src="https://raw.githubusercontent.com/rajatkrish007/pictures/main/8.jpg" alt="A Hopeful, Happy Photo" class="w-full h-full object-cover" onerror="this.onerror=null;this.src='https://placehold.co/600x400/fecdd3/be123c?text=Our+Future';">
+            </div>
+            <div class="w-full md:w-1/2 text-center md:text-left">
+                <h2 class="font-playfair text-2xl md:text-4xl text-gray-800 mb-2 sm:mb-4 animated fade-in-up delay-1">Dreaming Of Our 'Someday'</h2>
+                <p class="text-gray-600 text-base md:text-lg animated fade-in-up delay-2">
+                   For the first time, I feel completely safe in a relationship. The distance doesn't make us unsure; it only makes me more certain that my future is with you. I dream of marrying you, having kids, and living a beautiful life together. I can't wait to make you a part of my family and to become a part of yours. I promise I will be there for you, always and forever.
+                </p>
+            </div>
+        </div>
+
+        <!-- Slide 7: Final Message -->
+        <div class="slide w-full h-full flex-col items-center justify-center p-4 sm:p-8 text-center">
+            <div class="w-20 h-20 sm:w-24 sm:h-24 mb-6 heart-icon animated fade-in flex items-center justify-center">
+                <svg class="w-full h-full" xmlns="http://www.w-3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            <h1 class="font-dancing-script text-5xl sm:text-6xl md:text-8xl text-rose-600 mb-4 animated fade-in-up delay-1">I Love You Shonu</h1>
+            <div class="absolute bottom-4 right-4 sm:bottom-8 sm:right-8 text-right">
+                <p class="text-lg sm:text-xl md:text-2xl text-gray-700 animated fade-in-up delay-2">Yours,</p>
+                <p class="font-dancing-script text-2xl sm:text-3xl md:text-4xl text-rose-600 animated fade-in-up delay-3">Shonty</p>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <button id="prevBtn" class="nav-btn absolute top-1/2 left-2 transform -translate-y-1/2 rounded-full p-2 shadow-md z-10">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+        </button>
+        <button id="nextBtn" class="nav-btn absolute top-1/2 right-2 transform -translate-y-1/2 rounded-full p-2 shadow-md z-10">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+        </button>
+        
+        <!-- Slide Indicators -->
+        <div id="indicators" class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10">
+        </div>
+
+    </div>
+
+    <script>
+        // --- Floating Hearts Generation ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const heartsBg = document.getElementById('hearts-bg');
+            if (!heartsBg) return;
+            const numHearts = 40; 
+            const colors = ['#fecdd3', '#fb7185', '#e11d48', '#fda4af']; // Rose-200, Rose-400, Rose-600, Rose-300
+
+            for (let i = 0; i < numHearts; i++) {
+                const heart = document.createElement('div');
+                heart.classList.add('heart-shape');
+                
+                const size = Math.random() * 15 + 5; // Heart size between 5px and 20px
+                heart.style.width = `${size}px`;
+                heart.style.height = `${size}px`;
+                
+                heart.style.left = `${Math.random() * 100}vw`;
+                heart.style.color = colors[Math.floor(Math.random() * colors.length)];
+
+                const duration = Math.random() * 20 + 15; // Animation duration between 15s and 35s
+                const delay = Math.random() * -35; // Negative delay 
+                
+                heart.style.animationDuration = `${duration}s`;
+                heart.style.animationDelay = `${delay}s`;
+
+                heartsBg.appendChild(heart);
+            }
+        });
+
+        // --- Presentation Logic ---
+        const slides = document.querySelectorAll('.slide');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const indicatorsContainer = document.getElementById('indicators');
+        let currentSlide = 0;
+        let isAnimating = false;
+
+        slides.forEach((slide, index) => {
+            const indicator = document.createElement('div');
+            indicator.classList.add('w-2.5', 'h-2.5', 'rounded-full', 'cursor-pointer', 'indicator');
+            indicator.addEventListener('click', () => goToSlide(index));
+            indicatorsContainer.appendChild(indicator);
+        });
+        
+        const indicators = indicatorsContainer.children;
+
+        function goToSlide(slideIndex) {
+            if (isAnimating || slideIndex === currentSlide) return;
+            isAnimating = true;
+            
+            const outgoingSlide = slides[currentSlide];
+            outgoingSlide.classList.add('slide-out');
+
+            currentSlide = slideIndex;
+            const incomingSlide = slides[currentSlide];
+            incomingSlide.classList.add('active');
+
+            setTimeout(() => {
+                outgoingSlide.classList.remove('active', 'slide-out');
+                updateIndicators();
+                isAnimating = false;
+            }, 800); // Match CSS transition duration
+        }
+
+        function updateIndicators() {
+             for(let i = 0; i < indicators.length; i++){
+                if(i === currentSlide){
+                    indicators[i].classList.add('active');
+                } else {
+                    indicators[i].classList.remove('active');
+                }
+            }
+        }
+
+        function nextSlide() {
+            const nextIndex = (currentSlide + 1) % slides.length;
+            goToSlide(nextIndex);
+        }
+
+        function prevSlide() {
+            const prevIndex = (currentSlide - 1 + slides.length) % slides.length;
+            goToSlide(prevIndex);
+        }
+
+        nextBtn.addEventListener('click', nextSlide);
+        prevBtn.addEventListener('click', prevSlide);
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') nextSlide();
+            else if (e.key === 'ArrowLeft') prevSlide();
+        });
+
+        updateIndicators();
+
+        // --- Flip Card Logic for Slide 5 ---
+        const flipCards = document.querySelectorAll('.flip-card');
+        flipCards.forEach(card => {
+            card.addEventListener('click', () => {
+                card.classList.toggle('is-flipped');
+            });
+        });
+    </script>
+
+</body>
+</html>
+
+
+
+
+
+
+
+

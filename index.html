@@ -167,6 +167,8 @@
             padding-right: 10px;
             text-align: left;
             line-height: 25px;
+            /* Smooth scrolling for mobile */
+            -webkit-overflow-scrolling: touch; 
         }
 
         .scroll-content::-webkit-scrollbar {
@@ -249,16 +251,44 @@
             font-style: italic;
         }
 
-        /* FIX: Player must be technically visible (opacity 0) but not display:none */
+        /* --- Player & Controls --- */
+        /* Must be visible (1px) but transparent to satisfy mobile policies */
         #youtube-player {
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
             width: 1px;
             height: 1px;
-            opacity: 0.01; /* Tiny opacity to keep it active */
+            opacity: 0.01;
             z-index: -1;
             pointer-events: none;
+        }
+
+        /* Music Toggle Button (Fallback) */
+        .music-control {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #ff4d6d;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            z-index: 100;
+            transition: transform 0.3s;
+            display: none; /* Hidden until envelope opens */
+            opacity: 0.8;
+        }
+
+        .music-control:hover {
+            transform: scale(1.1);
+            opacity: 1;
         }
     </style>
 </head>
@@ -268,6 +298,8 @@
 
     <div id="youtube-player"></div>
 
+    <div class="music-control" id="musicBtn" onclick="toggleMusic()">🎵</div>
+
     <div class="container">
         <div class="envelope-wrapper" id="envelope" onclick="openEnvelope()">
             <div class="envelope">
@@ -276,7 +308,7 @@
                 </div>
                 <div class="pocket"></div>
             </div>
-            <div class="click-hint">Click to open</div>
+            <div class="click-hint">Tap to open</div>
             
             <div class="letter-card" id="letter">
                 <div class="scroll-content">
@@ -314,7 +346,9 @@
     </div>
 
     <script src="https://www.youtube.com/iframe_api"></script>
+
     <script>
+        // --- Hearts Animation ---
         function createHearts() {
             const container = document.getElementById('hearts-container');
             const heartCount = 20; 
@@ -331,24 +365,23 @@
         }
         createHearts();
 
-        // --- YouTube API ---
+        // --- YouTube Player Config ---
         var player;
+        var isMusicPlaying = false;
+
         function onYouTubeIframeAPIReady() {
             player = new YT.Player('youtube-player', {
-                height: '360',
-                width: '640',
+                height: '10', // Must be > 0 for mobile
+                width: '10',  // Must be > 0 for mobile
                 videoId: 'lG3RpIqP3CU',
                 playerVars: {
                     'autoplay': 0,
                     'controls': 0,
-                    'showinfo': 0,
-                    'modestbranding': 1,
+                    'playsinline': 1, // CRITICAL for iPhone
                     'loop': 1,
-                    'playlist': 'lG3RpIqP3CU', 
-                    'fs': 0,
-                    'cc_load_policy': 0, 
-                    'iv_load_policy': 3, 
-                    'autohide': 0
+                    'playlist': 'lG3RpIqP3CU',
+                    'rel': 0,
+                    'showinfo': 0
                 },
                 events: {
                     'onReady': onPlayerReady
@@ -357,9 +390,10 @@
         }
 
         function onPlayerReady(event) {
-            event.target.setVolume(100); // Ensure volume is up
+            event.target.setVolume(100);
         }
 
+        // --- Open Envelope & Start Music ---
         let isEnvelopeOpen = false;
 
         function openEnvelope() {
@@ -368,16 +402,38 @@
             
             const envelope = document.getElementById('envelope');
             const hint = document.querySelector('.click-hint');
+            const musicBtn = document.getElementById('musicBtn');
             
             envelope.classList.add('open');
             hint.style.display = 'none';
 
-            // Attempt to play
+            // Show Music Button
+            setTimeout(() => {
+                musicBtn.style.display = 'flex';
+            }, 1000);
+
+            // Attempt Autoplay
             if (player && player.playVideo) {
                 player.playVideo();
+                isMusicPlaying = true;
             }
 
             envelope.onclick = null;
+        }
+
+        // --- Manual Music Toggle ---
+        function toggleMusic() {
+            if (!player) return;
+            
+            if (isMusicPlaying) {
+                player.pauseVideo();
+                isMusicPlaying = false;
+                document.getElementById('musicBtn').innerText = '🔇';
+            } else {
+                player.playVideo();
+                isMusicPlaying = true;
+                document.getElementById('musicBtn').innerText = '🎵';
+            }
         }
     </script>
 </body>

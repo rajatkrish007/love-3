@@ -57,8 +57,16 @@
             position: relative;
             width: 300px;
             height: 200px;
-            cursor: pointer;
+            cursor: pointer; /* Changed logic in JS */
             transition: transform 0.5s ease;
+            opacity: 0.7; /* Dimmed until loaded */
+            pointer-events: none; /* Disabled until loaded */
+        }
+        
+        .envelope-wrapper.loaded {
+            opacity: 1;
+            pointer-events: all;
+            cursor: pointer;
         }
 
         .envelope-wrapper:hover {
@@ -167,21 +175,13 @@
             padding-right: 10px;
             text-align: left;
             line-height: 25px;
-            /* Smooth scrolling for mobile */
             -webkit-overflow-scrolling: touch; 
         }
 
-        .scroll-content::-webkit-scrollbar {
-            width: 8px;
-        }
-        .scroll-content::-webkit-scrollbar-track {
-            background: #f1f1f1; 
-            border-radius: 10px;
-        }
-        .scroll-content::-webkit-scrollbar-thumb {
-            background: #ff8fa3; 
-            border-radius: 10px;
-        }
+        /* Scrollbar aesthetics */
+        .scroll-content::-webkit-scrollbar { width: 8px; }
+        .scroll-content::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+        .scroll-content::-webkit-scrollbar-thumb { background: #ff8fa3; border-radius: 10px; }
 
         .salutation {
             font-weight: bold;
@@ -251,20 +251,21 @@
             font-style: italic;
         }
 
-        /* --- Player & Controls --- */
-        /* Must be visible (1px) but transparent to satisfy mobile policies */
+        /* --- Music Player & Controls --- */
+        
+        /* 1. The YouTube Iframe: Must be visible (opacity > 0) to work on mobile */
         #youtube-player {
             position: fixed;
             top: 0;
             left: 0;
             width: 1px;
             height: 1px;
-            opacity: 0.01;
+            opacity: 0.01; /* Invisible but technically "there" */
             z-index: -1;
             pointer-events: none;
         }
 
-        /* Music Toggle Button (Fallback) */
+        /* 2. The Fallback Button: Shows if music fails to start */
         .music-control {
             position: fixed;
             bottom: 20px;
@@ -282,14 +283,16 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.2);
             z-index: 100;
             transition: transform 0.3s;
-            display: none; /* Hidden until envelope opens */
-            opacity: 0.8;
+            display: none; /* Hidden initially */
+            animation: bounce 2s infinite;
         }
 
-        .music-control:hover {
-            transform: scale(1.1);
-            opacity: 1;
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-10px);}
+            60% {transform: translateY(-5px);}
         }
+
     </style>
 </head>
 <body>
@@ -308,7 +311,7 @@
                 </div>
                 <div class="pocket"></div>
             </div>
-            <div class="click-hint">Tap to open</div>
+            <div class="click-hint" id="status-text">Loading Music...</div>
             
             <div class="letter-card" id="letter">
                 <div class="scroll-content">
@@ -348,11 +351,10 @@
     <script src="https://www.youtube.com/iframe_api"></script>
 
     <script>
-        // --- Hearts Animation ---
+        // --- Hearts Background ---
         function createHearts() {
             const container = document.getElementById('hearts-container');
-            const heartCount = 20; 
-            for (let i = 0; i < heartCount; i++) {
+            for (let i = 0; i < 20; i++) {
                 let heart = document.createElement('div');
                 heart.innerHTML = '❤';
                 heart.classList.add('bg-heart');
@@ -365,23 +367,22 @@
         }
         createHearts();
 
-        // --- YouTube Player Config ---
+        // --- YouTube Setup ---
         var player;
-        var isMusicPlaying = false;
+        var musicStarted = false;
 
         function onYouTubeIframeAPIReady() {
             player = new YT.Player('youtube-player', {
-                height: '10', // Must be > 0 for mobile
-                width: '10',  // Must be > 0 for mobile
+                height: '10', // Non-zero for mobile
+                width: '10',
                 videoId: 'lG3RpIqP3CU',
                 playerVars: {
                     'autoplay': 0,
                     'controls': 0,
-                    'playsinline': 1, // CRITICAL for iPhone
+                    'playsinline': 1, // Critical for iOS
                     'loop': 1,
                     'playlist': 'lG3RpIqP3CU',
-                    'rel': 0,
-                    'showinfo': 0
+                    'rel': 0
                 },
                 events: {
                     'onReady': onPlayerReady
@@ -390,10 +391,18 @@
         }
 
         function onPlayerReady(event) {
+            // Player is ready, enable the envelope
+            const envelope = document.getElementById('envelope');
+            const status = document.getElementById('status-text');
+            
+            envelope.classList.add('loaded');
+            status.innerText = "Tap to Open & Play Music";
+            
+            // Set volume just in case
             event.target.setVolume(100);
         }
 
-        // --- Open Envelope & Start Music ---
+        // --- Interaction ---
         let isEnvelopeOpen = false;
 
         function openEnvelope() {
@@ -401,38 +410,48 @@
             isEnvelopeOpen = true;
             
             const envelope = document.getElementById('envelope');
-            const hint = document.querySelector('.click-hint');
+            const status = document.getElementById('status-text');
             const musicBtn = document.getElementById('musicBtn');
             
+            // 1. Visual Animation
             envelope.classList.add('open');
-            hint.style.display = 'none';
+            status.style.display = 'none';
 
-            // Show Music Button
-            setTimeout(() => {
-                musicBtn.style.display = 'flex';
-            }, 1000);
-
-            // Attempt Autoplay
-            if (player && player.playVideo) {
+            // 2. Try to play music immediately (Direct user interaction)
+            if (player && typeof player.playVideo === 'function') {
                 player.playVideo();
-                isMusicPlaying = true;
+                musicStarted = true;
             }
 
+            // 3. Show Backup Button after 1 second (in case autoplay fails)
+            setTimeout(() => {
+                musicBtn.style.display = 'flex';
+                // Check if playing
+                let state = player.getPlayerState();
+                if (state !== 1) { // 1 = Playing
+                     // If not playing, pulse the button
+                     musicBtn.style.animation = "bounce 1s infinite";
+                } else {
+                    musicBtn.style.animation = "none";
+                }
+            }, 1000);
+
+            // Cleanup
             envelope.onclick = null;
         }
 
-        // --- Manual Music Toggle ---
         function toggleMusic() {
             if (!player) return;
+            const btn = document.getElementById('musicBtn');
             
-            if (isMusicPlaying) {
-                player.pauseVideo();
-                isMusicPlaying = false;
-                document.getElementById('musicBtn').innerText = '🔇';
-            } else {
+            // If strictly paused or unstarted
+            if (player.getPlayerState() !== 1) {
                 player.playVideo();
-                isMusicPlaying = true;
-                document.getElementById('musicBtn').innerText = '🎵';
+                btn.innerText = "🎵";
+                btn.style.animation = "none"; // Stop bouncing once clicked
+            } else {
+                player.pauseVideo();
+                btn.innerText = "🔇";
             }
         }
     </script>
